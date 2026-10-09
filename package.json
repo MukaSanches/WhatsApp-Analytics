@@ -1,0 +1,64 @@
+{
+  "name": "whatsapp-analytics-desktop",
+  "version": "1.1.0",
+  "description": "Dashboard local para Windows com conexão real ao WhatsApp via QR e importação de conversas",
+  "author": "MukaSanches",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.js",
+    "pack:win": "electron-builder --win nsis portable --x64",
+    "pack:dir": "electron-builder --win dir --x64"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "whatsapp-web.js": "^1.34.7",
+    "qrcode": "^1.5.4"
+  },
+  "build": {
+    "appId": "com.mukasanches.whatsappanalytics",
+    "productName": "WhatsApp Analytics",
+    "artifactName": "WhatsApp-Analytics-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "whatsapp-bridge.cjs",
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "WhatsApp-Analytics-Portable-${version}-${arch}.${ext}"
+    },
+    "asarUnpack": [
+      "node_modules/whatsapp-web.js/**",
+      "node_modules/puppeteer/**",
+      "node_modules/puppeteer-core/**"
+    ]
+  }
+}

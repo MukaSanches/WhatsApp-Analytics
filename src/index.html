@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>WhatsApp Analytics — Insights locais</title>
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><img src="../assets/logo.svg" alt="" class="brand-icon"><span class="brand-copy">WhatsApp<span>Analytics</span><small>LIVE INTELLIGENCE DESKTOP</small></span></div>
+    <div class="nav-caption">EXPLORAR</div>
+    <nav class="navigation" aria-label="Navegação">
+      <button class="nav-link active" data-go="overview"><span class="nav-icon">▦</span> Visão geral <span class="active-pip"></span></button>
+      <button class="nav-link" data-go="participants"><span class="nav-icon">♙</span> Participantes</button>
+      <button class="nav-link" data-go="activity"><span class="nav-icon">▥</span> Atividade</button>
+      <button class="nav-link" data-go="words"><span class="nav-icon">♧</span> Palavras e emojis</button>
+      <button class="nav-link" data-go="about"><span class="nav-icon">ⓘ</span> Sobre e privacidade</button>
+    </nav>
+    <div class="side-separator"></div>
+    <div class="nav-caption">BIBLIOTECA</div>
+    <div class="side-imports" id="source-list"><span class="source-placeholder">Nenhuma conversa importada</span></div>
+    <div class="sidebar-bottom">
+      <div class="privacy-mini"><div class="shield">✓</div><div><strong>100% privado</strong><span>Seus dados ficam no computador.</span></div></div>
+      <div class="version">v1.1.0 <span>•</span> Feito para Windows</div>
+    </div>
+  </aside>
+  <main class="main" id="main">
+    <header class="topbar">
+      <div class="breadcrumb">Workspace <span>/</span> <b id="crumb">Visão geral</b></div>
+      <div class="topbar-actions"><span class="live-pill"><span></span> PROCESSAMENTO LOCAL</span><button class="button button-outline" id="export-btn" title="Exportar métricas em CSV">↓ Exportar CSV</button><button class="button button-outline" id="wa-connect">◉ Conectar WhatsApp</button><button class="button button-primary" id="import-btn"><span class="btn-plus">＋</span> Importar conversa</button></div>
+    </header>
+    <div class="content">
+      <section class="connection-panel" aria-label="Conexão real do WhatsApp">
+        <div class="connection-header"><div><div class="overline">CONEXÃO EM TEMPO REAL</div><h2>Seu WhatsApp, suas estatísticas <span id="wa-state" data-kind="offline">Desconectado</span></h2><p>Conecte por QR Code, escolha as conversas e acompanhe as mensagens reais.</p></div><div class="connection-actions"><button class="button button-outline" id="wa-refresh" disabled>↻ Atualizar chats</button><button class="button button-outline" id="wa-pause" disabled>Pausar</button></div></div>
+        <div class="wa-qr-wrap" id="wa-qr-wrap" hidden><div class="wa-qr-frame"><img id="wa-qr" alt="QR Code de conexão com o WhatsApp"></div><div><h3>Leia com o celular</h3><p>WhatsApp → Configurações ou menu ⋮ → Aparelhos conectados → Conectar aparelho.</p><small>QR gerado localmente. Nunca compartilhe este código.</small></div></div>
+        <div class="wa-toolbar"><label class="wa-search">BUSCAR CONVERSAS <input id="wa-chat-search" type="search" placeholder="Nome do contato ou grupo"></label><span id="wa-count">0 selecionadas</span><button class="button button-primary" id="wa-sync" disabled>↻ Sincronizar selecionadas</button></div>
+        <div class="wa-chat-grid" id="wa-chats"><p>Conecte para mostrar suas conversas.</p></div>
+        <div class="wa-progress" id="wa-progress">Limite: 15 conversas e até 400 mensagens recentes por conversa. Nenhuma mensagem é enviada.</div>
+      </section>
+      <section class="hero" id="overview">
+        <div class="hero-content"><div class="eyebrow"><span class="eyebrow-star">✦</span> SEU PAINEL DE INTELIGÊNCIA</div><h1>Descubra o que suas<br><em>conversas revelam.</em></h1><p>Estatísticas, padrões e histórias dos seus chats.<br>Sincronize pelo QR Code, com dados no seu computador.</p><div class="hero-actions"><button class="button button-white" id="hero-import">↗ Analisar conversa</button><button class="hero-link" id="demo-btn">↻ Explorar demonstração</button></div></div>
+        <div class="hero-graphic" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-big-circle"><img src="../assets/logo.svg" alt=""></div><div class="float-stat stat-one">↗ <strong>+24,8%</strong><small>atividade</small></div><div class="float-stat stat-two"><strong>24h</strong><small>insights</small></div><div class="sparkles">✦</div></div>
+      </section>
+      <div class="section-heading stats-heading"><div><div class="overline">PERFORMANCE DO CHAT</div><h2>Seu panorama <span class="soft-label" id="dataset-tag">● Dados de exemplo</span></h2></div><span class="subtitle" id="date-range">—</span></div>
+      <section class="kpis" aria-label="Indicadores principais">
+        <article class="kpi"><div class="kpi-top"><span>Mensagens analisadas</span><div class="kpi-icon green">☷</div></div><strong id="kpi-total">0</strong><div class="kpi-desc">Mensagens no filtro atual</div><div class="kpi-trace" id="trace-one"></div></article>
+        <article class="kpi"><div class="kpi-top"><span>Participantes</span><div class="kpi-icon blue">♙</div></div><strong id="kpi-people">0</strong><div class="kpi-desc">Pessoas identificadas</div><div class="kpi-trace" id="trace-two"></div></article>
+        <article class="kpi"><div class="kpi-top"><span>Mídias compartilhadas</span><div class="kpi-icon orange">▧</div></div><strong id="kpi-media">0</strong><div class="kpi-desc">Registros de mídia no texto</div><div class="kpi-trace" id="trace-three"></div></article>
+        <article class="kpi"><div class="kpi-top"><span>Média por dia ativo</span><div class="kpi-icon purple">◷</div></div><strong id="kpi-avg">0</strong><div class="kpi-desc">Em <span id="active-days">0</span> dias com mensagens</div><div class="kpi-trace" id="trace-four"></div></article>
+      </section>
+      <section class="filter-bar" aria-label="Filtros"><div class="filter-title">◫ <span>Filtros</span></div><label class="filter-item">CONVERSA <select id="source-filter"><option value="all">Todas as conversas</option></select></label><label class="filter-item">DE <input id="from-filter" type="date"></label><label class="filter-item">ATÉ <input id="to-filter" type="date"></label><label class="filter-item stretch">BUSCAR <input id="search-filter" type="search" placeholder="Autor ou palavra..."></label><button class="reset" id="reset-filters">Limpar</button></section>
+      <section class="chart-grid" id="activity"><article class="panel trend-panel"><div class="panel-head"><div><div class="overline">EVOLUÇÃO</div><h3>Volume de mensagens</h3><p>Movimento ao longo dos meses</p></div><span class="panel-badge">Mensal</span></div><div class="line-graph" id="monthly-graph"></div></article>
+      <article class="panel split-panel" id="participants"><div class="panel-head"><div><div class="overline">PESSOAS</div><h3>Quem mais conversa?</h3><p>Participação nas mensagens</p></div></div><div class="donut-row"><div class="donut-chart" id="donut-chart"><div class="donut-hole"><strong id="donut-total">0</strong><small>mensagens</small></div></div><div class="donut-legend" id="donut-legend"></div></div></article></section>
+      <section class="bottom-grid"><article class="panel heat-panel"><div class="panel-head"><div><div class="overline">COMPORTAMENTO</div><h3>Mapa de atividade</h3><p>Descubra os dias e horários mais movimentados</p></div><span class="panel-badge" id="peak-time">Pico: —</span></div><div class="heatmap-container"><div class="heat-head" id="heat-head"></div><div class="heat-body" id="heat-body"></div></div><div class="heat-legend">Menos atividade <span class="scale"><i></i><i></i><i></i><i></i><i></i></span> Mais atividade</div></article>
+      <article class="panel rank-panel"><div class="panel-head"><div><div class="overline">RANKING</div><h3>Top participantes</h3><p>Quem lidera as conversas</p></div><span class="panel-badge">Top 5</span></div><div id="participant-rank" class="rank-list"></div></article></section>
+      <section class="bottom-grid" id="words"><article class="panel word-panel"><div class="panel-head"><div><div class="overline">VOCABULÁRIO</div><h3>Palavras mais usadas</h3><p>Termos mais repetidos, sem palavras comuns</p></div></div><div class="word-cloud" id="word-cloud"></div></article>
+      <article class="panel emoji-panel"><div class="panel-head"><div><div class="overline">EXPRESSÕES</div><h3>Emojis favoritos</h3><p>As reações que dominam o chat</p></div></div><div class="emoji-grid" id="emoji-grid"></div><div class="extra-stats" id="extra-stats"></div></article></section>
+      <section class="about-panel" id="about"><div class="about-icon">✓</div><div><h3>Os seus dados pertencem a você.</h3><p>O WhatsApp Analytics utiliza uma integração não oficial com WhatsApp Web, após sua autorização por QR Code. O conteúdo analisado fica apenas na memória do aplicativo; a sessão de autenticação fica armazenada no seu computador. Não enviamos mensagens, nem carregamos arquivos de mídia. A integração pode deixar de funcionar caso o WhatsApp mude seus sistemas. Também é possível importar TXT/ZIP sem conectar.</p></div><button class="button button-outline" id="pdf-btn">⎙ Salvar como PDF</button></section>
+      <footer>WhatsApp Analytics <span>•</span> App independente, não afiliado à Meta ou ao WhatsApp. <span class="footer-right">© 2026 • MukaSanches</span></footer>
+    </div>
+  </main>
+</div>
+<div class="toast" role="status" aria-live="polite" id="toast"></div>
+<script type="module" src="app.js"></script>
+</body></html>

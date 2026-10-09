@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+*.log
+*.zip
+*.txt
+!README.txt
+.DS_Store
+.env*
+
+.wwebjs_auth/
+.wwebjs_cache/
+userData/

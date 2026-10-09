@@ -1,0 +1,11 @@
+WhatsApp Analytics 1.1
+
+1. Instale Node.js 22 no Windows.
+2. Abra PowerShell nesta pasta e rode: npm install
+3. Rode: npm start
+4. Clique Conectar WhatsApp, leia QR em Aparelhos conectados.
+5. Selecione as conversas e clique Sincronizar selecionadas.
+
+Para gerar EXE: npm run pack:win
+
+A biblioteca de QR usa WhatsApp Web NÃO OFICIAL. Consulte README.md.

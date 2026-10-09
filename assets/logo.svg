@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="WhatsApp Analytics">
+ <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#69ffa2"/><stop offset="1" stop-color="#18b95e"/></linearGradient></defs>
+ <rect x="3" y="3" width="122" height="122" rx="31" fill="#083c24" stroke="#43d782" stroke-width="5"/>
+ <path d="M28 37Q28 27 40 27H89Q101 27 101 39V83Q101 95 89 95H52L28 106L34 85Q28 81 28 74Z" fill="url(#g)"/>
+ <path d="M46 75V61M61 75V47M76 75V54M91 75V39" fill="none" stroke="#0a4429" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -5,6 +5,14 @@ const path = require('node:path');
 const AdmZip = require('adm-zip');
 const { WhatsAppBridge } = require('./whatsapp-bridge.cjs');
 
+// Não permitir dois processos Electron disputando o mesmo perfil Chromium.
+const singleInstance = app.requestSingleInstanceLock();
+if (!singleInstance) app.quit();
+app.on('second-instance', () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
+});
+
 protocol.registerSchemesAsPrivileged([{ scheme: 'wa-local', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 
 const MAX_IMPORT_BYTES = 25 * 1024 * 1024;
@@ -55,12 +63,14 @@ function createWindow() {
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', (event) => event.preventDefault());
 }
-app.whenReady().then(() => {
+if (singleInstance) app.whenReady().then(() => {
   bridge = new WhatsAppBridge({ sessionPath: path.join(app.getPath('userData'), 'whatsapp-session'), emit: emitToWindow });
   ipcMain.handle('wa-status', () => bridge.getStatus());
   ipcMain.handle('wa-connect', () => bridge.start());
   ipcMain.handle('wa-chats', () => bridge.listChats());
-  ipcMain.handle('wa-sync', (_event, ids) => bridge.sync(ids));
+  ipcMain.handle('wa-sync', (_event, ids, options) => bridge.sync(ids, options));
+  ipcMain.handle('wa-cancel-sync', () => bridge.cancelSync());
+  ipcMain.handle('wa-repair', () => bridge.repair());
   ipcMain.handle('wa-stop', (_event, logout) => bridge.stop(logout === true));
   protocol.handle('wa-local', (request) => {
     const parsed = new URL(request.url);
@@ -101,4 +111,12 @@ app.whenReady().then(() => {
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
-app.on('before-quit', () => { if (bridge?.client) bridge.client.destroy().catch(() => {}); });
+let shutdownComplete = false;
+app.on('before-quit', event => {
+  if (shutdownComplete || !bridge?.client) return;
+  event.preventDefault();
+  bridge.shutdown().catch(() => {}).finally(() => {
+    shutdownComplete = true;
+    app.quit();
+  });
+});

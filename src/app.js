@@ -12,6 +12,8 @@ let messages = [];
 let imports = [];
 let mode = 'empty';
 let toastTimer;
+let messagePage = 0;
+const MESSAGE_PAGE_SIZE = 60;
 
 function toast(text, error = false) {
   const node = $('toast'); node.textContent = text; node.classList.toggle('error', error); node.classList.add('show');
@@ -118,6 +120,28 @@ function renderEmojis(stats) {
   ex.append(a,b);
   ex.title='*Tempo entre mensagens consecutivas de autores diferentes na mesma conversa, até 24 horas. Não indica leitura de mensagem.';
 }
+function renderMessages(stats) {
+  const host = $('messages-list'); host.replaceChildren();
+  const count = stats.filtered.length;
+  const pages = Math.max(1, Math.ceil(count / MESSAGE_PAGE_SIZE));
+  messagePage = Math.min(messagePage, pages - 1);
+  const start = Math.max(0, count - (messagePage + 1) * MESSAGE_PAGE_SIZE);
+  const end = count - messagePage * MESSAGE_PAGE_SIZE;
+  const items = stats.filtered.slice(start, end).reverse();
+  for (const msg of items) {
+    const card = el('article', 'message-card');
+    const meta = el('div', 'message-meta');
+    meta.append(el('strong', '', msg.author || 'Desconhecido'), el('span', '', `${msg.source || 'Conversa'} · ${msg.date.toLocaleString('pt-BR')}`));
+    card.append(meta, el('p', 'message-text', msg.text || (msg.media ? '[Mídia]' : '[Sem texto]')));
+    if (msg.media) card.append(el('small', 'message-media', 'Mídia ou anexo — conteúdo não baixado'));
+    host.append(card);
+  }
+  if (!items.length) host.append(el('div','empty','Conecte e sincronize suas conversas para visualizar mensagens reais.'));
+  $('messages-counter').textContent = `${nf.format(count)} mensagens no filtro`;
+  $('messages-page').textContent = `Página ${messagePage + 1} de ${pages}`;
+  $('messages-newer').disabled = messagePage === 0;
+  $('messages-older').disabled = messagePage >= pages - 1;
+}
 function render() {
   const s=analyze(messages,getFilters());
   $('kpi-total').textContent=nf.format(s.total);
@@ -129,16 +153,18 @@ function render() {
   const df = date=>date?date.toLocaleDateString('pt-BR'):'—';
   $('date-range').textContent=`${df(s.first)} — ${df(s.last)}`;
   renderMonthly(s);renderDonut(s);renderHeat(s);renderRank(s);renderWords(s);renderEmojis(s);
+  renderMessages(s);
   $('trace-one').innerHTML=svgLine(s.daily.slice(-15).map(v=>v[1]),'#55ef8f');
   $('trace-two').innerHTML=svgLine(s.participantsRank.map(v=>v[1]),'#63baff');
-  $('trace-three').innerHTML=svgLine([1,2,2,3,4,3,5,7,5,8,7,9],'#ffbd70');
+  $('trace-three').innerHTML=svgLine(s.daily.slice(-15).map(v=>v[1]),'#ffbd70');
   $('trace-four').innerHTML=svgLine(s.monthly.map(v=>v[1]),'#ac9fff');
 }
 function refreshSources() {
   const selector=$('source-filter'), host=$('source-list'), current=selector.value;
   selector.replaceChildren(new Option('Todas as conversas','all'));host.replaceChildren();
   const names=[...new Set(messages.map(m=>m.source))];
-  names.forEach(name=>{selector.add(new Option(name,name));const chip=el('button','source-chip',name);chip.title=name;chip.addEventListener('click',()=>{selector.value=name;render();});host.append(chip);});
+  names.forEach((name,index)=>{selector.add(new Option(name,name));if(index<36){const chip=el('button','source-chip',name);chip.title=name;chip.addEventListener('click',()=>{selector.value=name;messagePage=0;render();});host.append(chip);}});
+  if(names.length>36)host.append(el('span','source-placeholder',`+ ${nf.format(names.length-36)} conversas no filtro acima`));
   if (!names.length) host.append(el('span','source-placeholder','Nenhuma conversa importada'));
   selector.value=names.includes(current)?current:'all';
 }
@@ -180,12 +206,14 @@ async function exportCsv() {
   } catch (e) {toast(`Não foi possível exportar: ${e.message}`,true);}
 }
 function init() {
-  ['from-filter','to-filter','source-filter'].forEach(id=>$(id).addEventListener('change',render));
-  $('search-filter').addEventListener('input',render);
+  ['from-filter','to-filter','source-filter'].forEach(id=>$(id).addEventListener('change',()=>{messagePage=0;render();}));
+  let searchTimer; $('search-filter').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{messagePage=0;render();},220);});
   $('reset-filters').addEventListener('click',()=>{$('search-filter').value='';$('from-filter').value='';$('to-filter').value='';$('source-filter').value='all';render();});
   $('import-btn').addEventListener('click',importFiles);$('hero-import').addEventListener('click',importFiles);
   $('demo-btn').addEventListener('click',resetDemo);$('export-btn').addEventListener('click',exportCsv);
   $('pdf-btn').addEventListener('click',()=>window.print());
+  $('messages-newer').addEventListener('click',()=>{messagePage=Math.max(0,messagePage-1);render();});
+  $('messages-older').addEventListener('click',()=>{messagePage++;render();});
   document.querySelectorAll('[data-go]').forEach(node=>node.addEventListener('click',()=>{
     document.querySelectorAll('.nav-link').forEach(n=>n.classList.toggle('active',n===node));
     const section=node.dataset.go;

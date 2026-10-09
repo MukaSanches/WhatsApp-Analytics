@@ -1,11 +1,9 @@
-WhatsApp Analytics 1.1
+WhatsApp Analytics 1.2.0 — Windows 10/11 x64
 
-1. Instale Node.js 22 no Windows.
-2. Abra PowerShell nesta pasta e rode: npm install
-3. Rode: npm start
-4. Clique Conectar WhatsApp, leia QR em Aparelhos conectados.
-5. Selecione as conversas e clique Sincronizar selecionadas.
+1. Execute o instalador ou a versão portátil.
+2. Clique em Conectar WhatsApp. Se surgir conflito de navegador, clique em Reparar conexão e depois em Conectar.
+3. Leia o QR Code em Aparelhos conectados.
+4. Selecione as conversas e o histórico desejado.
+5. Sincronize e explore as estatísticas e mensagens.
 
-Para gerar EXE: npm run pack:win
-
-A biblioteca de QR usa WhatsApp Web NÃO OFICIAL. Consulte README.md.
+A sincronização depende do histórico disponibilizado pelo WhatsApp Web. Não há acesso garantido a todo o histórico antigo.

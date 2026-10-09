@@ -31,3 +31,27 @@
 .wa-chat small{color:#719982;font-size:8px}
 .wa-progress{margin-top:14px;font-size:12px;color:#8ebb9d;min-height:14px}
 @media(max-width:1150px){.wa-chat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.connection-header{align-items:flex-start;flex-direction:column}}
+
+/* 1.2 — recuperação de sessão, sincronização profunda e visualizador de mensagens */
+.wa-sync-toolbar{display:flex;align-items:end;gap:14px;margin-top:13px;flex-wrap:wrap}
+.wa-limit{flex:0 1 290px;min-width:230px}
+.wa-limit select{width:100%;height:40px;background:#0c231a;border:1px solid #2b5d46;border-radius:9px;color:#edfdf1;padding:0 12px;font-size:12px}
+.wa-loaded-label{font-size:12px;color:#9fc6ad;flex:1}
+.wa-loaded-label strong{color:#6ef2a3;font-size:16px}
+.wa-more{background:#1a4a33;color:#b9f9d0;border:1px solid #2d7950;border-radius:9px;padding:10px;cursor:pointer}
+.wa-coverage{display:grid;gap:7px;margin-top:10px;max-height:185px;overflow:auto}
+.wa-coverage-row{display:flex;gap:14px;justify-content:space-between;border:1px solid #244936;border-radius:9px;background:#102c20;padding:9px 12px;font-size:11px}
+.wa-coverage-row strong{max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d7ffe6}
+.wa-coverage-row span{color:#91bda4;text-align:right}
+.messages-panel{margin-top:18px;scroll-margin-top:108px}
+.messages-list{display:grid;gap:9px;max-height:620px;overflow-y:auto;padding-right:4px}
+.message-card{background:#0b2119;border:1px solid #264735;border-radius:10px;padding:12px 15px}
+.message-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#88ae99;font-size:11px;flex-wrap:wrap}
+.message-meta strong{color:#78e9a0}
+.message-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#def6e5;line-height:1.55;margin:9px 0 0}
+.message-media{color:#e4b97b;display:block;margin-top:8px}
+.message-pagination{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px;font-size:12px;color:#a4c4b0}
+.message-pagination .button:disabled{opacity:.35;cursor:not-allowed}
+button[hidden]{display:none!important}
+@media(max-width:800px){.wa-coverage-row{display:grid}.wa-coverage-row strong{max-width:100%}.wa-coverage-row span{text-align:left}}
+@media print{.messages-panel{display:none}}

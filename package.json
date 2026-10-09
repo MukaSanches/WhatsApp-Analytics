@@ -1,7 +1,7 @@
 {
   "name": "whatsapp-analytics-desktop",
-  "version": "1.1.0",
-  "description": "Dashboard local para Windows com conexão real ao WhatsApp via QR e importação de conversas",
+  "version": "1.2.0",
+  "description": "Painel Windows de estatísticas reais do WhatsApp com recuperação de sessão, sincronização profunda e QR Code",
   "author": "MukaSanches",
   "license": "MIT",
   "private": true,
@@ -9,7 +9,7 @@
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "test": "node --test tests/*.test.js",
+    "test": "node --test tests/*.test.js tests/*.test.cjs",
     "pack:win": "electron-builder --win nsis portable --x64 --publish never",
     "pack:dir": "electron-builder --win dir --x64 --publish never"
   },
@@ -33,6 +33,7 @@
       "main.cjs",
       "preload.cjs",
       "whatsapp-bridge.cjs",
+      "session-recovery.cjs",
       "src/**/*",
       "assets/**/*",
       "package.json"

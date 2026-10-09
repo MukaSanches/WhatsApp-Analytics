@@ -8,9 +8,9 @@ const nf = new Intl.NumberFormat('pt-BR');
 const pct = (n, total) => total ? `${(n / total * 100).toFixed(1).replace('.', ',')}%` : '0%';
 const colors = ['#27d76b','#5db9ed','#eeb777','#af92fc','#f17e96','#a4e0bd','#e1dc69','#659bce'];
 const initials = name => (name.match(/\p{L}/gu) || ['?']).slice(0, 2).join('').toUpperCase();
-let messages = demoMessages();
+let messages = [];
 let imports = [];
-let mode = 'demo';
+let mode = 'empty';
 let toastTimer;
 
 function toast(text, error = false) {
@@ -125,7 +125,7 @@ function render() {
   $('kpi-media').textContent=nf.format(s.media);
   $('kpi-avg').textContent=nf.format(Math.round(s.avgDay));
   $('active-days').textContent=nf.format(s.activeDays);
-  $('dataset-tag').textContent=mode==='demo'?'● Dados de exemplo':mode==='live'?'● WhatsApp real conectado':'● Conversas importadas';
+  $('dataset-tag').textContent=mode==='demo'?'● Dados de exemplo':mode==='live'?'● WhatsApp real sincronizado':mode==='imported'?'● Conversas importadas':'● Aguardando conexão';
   const df = date=>date?date.toLocaleDateString('pt-BR'):'—';
   $('date-range').textContent=`${df(s.first)} — ${df(s.last)}`;
   renderMonthly(s);renderDonut(s);renderHeat(s);renderRank(s);renderWords(s);renderEmojis(s);
@@ -153,14 +153,14 @@ async function importFiles() {
       if (parsed.messages.length) {newMessages.push(...parsed.messages);summaries.push(`${file.name}: ${nf.format(parsed.messages.length)}`);}
     }
     if (!newMessages.length) throw new Error('Nenhuma mensagem reconhecida. Confira o formato ou altere a ordem de data usando o parser de exemplo.');
-    if (mode==='demo') {messages=[];imports=[];}
+    if (mode!=='imported') {messages=[];imports=[];}
     mode='imported';messages.push(...newMessages);imports.push(...summaries);
     $('search-filter').value='';$('from-filter').value='';$('to-filter').value='';refreshSources();render();
     toast(`${nf.format(newMessages.length)} mensagens importadas. ${files.length} arquivo(s).`);
   } catch(e) {toast(`Falha na importação: ${e.message}`,true);}
 }
 function resetDemo() {
-  if (mode!=='demo' && !confirm('Substituir os dados importados pela demonstração?'))return;
+  if (['imported','live'].includes(mode) && !confirm('Substituir seus dados pela demonstração?'))return;
   mode='demo';messages=demoMessages();imports=[];
   $('search-filter').value='';$('from-filter').value='';$('to-filter').value='';refreshSources();render();toast('Demonstração carregada com dados fictícios.');
 }

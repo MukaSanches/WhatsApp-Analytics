@@ -64,6 +64,7 @@ class WhatsAppBridge {
     });
     client.on('message_create', message => {
       if (client !== this.client || this.phase !== 'ready') return;
+      if (!Number.isFinite(Number(message.timestamp))) return;
       const id = message.fromMe ? message.to : message.from;
       const source = this.monitored.get(id);
       if (!source) return;

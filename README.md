@@ -1,4 +1,4 @@
-# WhatsApp Analytics 1.2 — Windows
+# WhatsApp Analytics 1.3 — Windows
 
 Painel moderno em verde, com gráficos e **conexão real à sua conta pelo QR Code de Aparelhos conectados**. Projeto independente de MukaSanches, não afiliado à Meta/WhatsApp.
 
@@ -53,7 +53,7 @@ Electron com `contextIsolation`, `sandbox`, sem `nodeIntegration` na UI, CSP res
 
 Licença MIT.
 
-## Novidades da v1.2.0
+## Novidades da v1.2.0 (mantidas na v1.3.0)
 
 - **Reparar conexão**: após erro de perfil do navegador em uso, encerra **somente** processos Chrome/Edge cujo comando aponta para o diretório exclusivo `session-analytics`. Não apaga cookies, tokens nem a sessão vinculada. É acionado somente após confirmação do usuário.
 - O Electron usa bloqueio de instância única e aguarda o encerramento do Chromium antes de fechar, reduzindo conflitos de sessão.
@@ -63,3 +63,13 @@ Licença MIT.
 - Os dados das mensagens ficam apenas na memória durante a execução; fechar o aplicativo descarta os dados carregados. Não há acesso a mídias binárias nem a mensagens apagadas.
 
 **Importante:** a função de reparo não deve ser usada com outro aplicativo que esteja intencionalmente usando o mesmo perfil. O WhatsApp Web é um serviço não oficial para automação, sujeito a mudanças e restrições. A sincronização de histórico extenso pode ser lenta e consumir memória. Para histórico que não esteja disponível no WhatsApp Web, use exportação TXT/ZIP da conversa no celular.
+
+## Compatibilidade com WhatsApp Web 2.3000.x
+
+Na versão 1.34.7 de `whatsapp-web.js`, `getChats()`/`getChatById()` podem falhar com o erro `r: r` após a autenticação, devido a mudanças internas dos modelos do WhatsApp Web. O app agora usa leitura alternativa **somente de leitura**, extraindo campos primitivos da coleção quando a API pública falha. A sessão permanece vinculada.
+
+Também há leitura alternativa de mensagens, tentando carregar mensagens anteriores quando disponível. A opção **Todo o histórico disponível** fica limitada no modo alternativo a **20 mil mensagens por conversa** para proteger a memória; o app exibe a limitação e informa histórico parcial. Não é garantia de acesso a todas as mensagens da conta.
+
+Fonte sobre a falha: https://github.com/wwebjs/whatsapp-web.js/issues/201845
+
+A conexão e a leitura de uma conta real ainda precisam ser verificadas com o usuário; os testes locais simulam modelos internos conhecidos.

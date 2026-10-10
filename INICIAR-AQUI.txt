@@ -1,4 +1,4 @@
-WhatsApp Analytics 1.2.0 — Windows 10/11 x64
+WhatsApp Analytics 1.3.0 — Windows 10/11 x64
 
 1. Execute o instalador ou a versão portátil.
 2. Clique em Conectar WhatsApp. Se surgir conflito de navegador, clique em Reparar conexão e depois em Conectar.
@@ -7,3 +7,5 @@ WhatsApp Analytics 1.2.0 — Windows 10/11 x64
 5. Sincronize e explore as estatísticas e mensagens.
 
 A sincronização depende do histórico disponibilizado pelo WhatsApp Web. Não há acesso garantido a todo o histórico antigo.
+
+A versão 1.3 tenta recuperar os chats quando a API antiga falha com erro r: r. Em modo alternativo, o limite de segurança é de 20 mil mensagens por conversa.

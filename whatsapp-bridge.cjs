@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
 const { isBrowserProfileConflict, repairStaleSession } = require('./session-recovery.cjs');
+const { readCompatibleChats, readCompatibleMessages } = require('./wa-compat.cjs');
 
 function browserExecutable() {
   if (process.env.WA_BROWSER_PATH && fs.existsSync(process.env.WA_BROWSER_PATH)) return process.env.WA_BROWSER_PATH;
@@ -93,15 +94,37 @@ class WhatsAppBridge {
   }
   async listChats() {
     this.assertReady();
-    const chats = await this.client.getChats();
-    return chats.filter(c => c.id?._serialized && !c.isStatus && !c.id._serialized.endsWith('@newsletter'))
-      .map(c => ({
-        id: c.id._serialized, name: String(c.name || 'Conversa sem nome').slice(0, 120),
-        isGroup: Boolean(c.isGroup), unread: Number(c.unreadCount || 0)
-      }));
+    try {
+      // WhatsApp Web can hang during model serialization; never block the
+      // compatibility reader indefinitely waiting for its public API.
+      let timer;
+      const chats = await Promise.race([
+        this.client.getChats(),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Tempo excedido em getChats')), 15000); })
+      ]).finally(() => clearTimeout(timer));
+      const mapped = chats.filter(c => c.id?._serialized && !c.isStatus && !c.id._serialized.endsWith('@newsletter'))
+        .map(c => ({
+          id: c.id._serialized, name: String(c.name || c.id._serialized.split('@')[0]).slice(0, 120),
+          isGroup: Boolean(c.isGroup || c.id._serialized.endsWith('@g.us')),
+          unread: Number(c.unreadCount || 0)
+        }));
+      // The public API may silently return [] when its injected models break.
+      if (mapped.length) return mapped;
+      const fallback = await readCompatibleChats(this.client);
+      if (fallback.length) this.emit('wa:notice', { message: `Modo compatibilidade ativo: ${fallback.length} conversas carregadas.` });
+      return fallback;
+    } catch (standardError) {
+      try {
+        const fallback = await readCompatibleChats(this.client);
+        this.emit('wa:notice', { message: `Leitura alternativa ativada: ${fallback.length} conversas. A biblioteca original falhou (${String(standardError.message || standardError).slice(0, 80)}).` });
+        return fallback;
+      } catch (compatError) {
+        throw new Error(`Falha ao listar conversas. API padrão: ${String(standardError.message || standardError).slice(0, 100)}. Leitor alternativo: ${String(compatError.message || compatError).slice(0, 160)}`);
+      }
+    }
   }
   normalize(message, chatId, source) {
-    const rawId = message.id?._serialized || `${chatId}-${message.timestamp}-${message.fromMe}`;
+    const rawId = message.id?._serialized || message.id?.$1 || (typeof message.id === 'string' ? message.id : null) || `${chatId}-${message.timestamp}-${message.fromMe}`;
     const author = message.fromMe ? 'Você' : (message.author ? String(message.author).split('@')[0] : source);
     return {
       id: String(rawId), chatId, source, author,
@@ -136,10 +159,28 @@ class WhatsAppBridge {
         const id = uniqueIds[index];
         const name = this.monitored.get(id);
         try {
-          const chat = await this.client.getChatById(id);
-          // Infinity solicita tudo o que o WhatsApp Web disponibilizar, NÃO todo o histórico da conta.
-          const items = await chat.fetchMessages({ limit });
-          const valid = items.filter(m => Number.isFinite(Number(m.timestamp)) && Number(m.timestamp) > 0);
+          let valid;
+          let partialReason = '';
+          let compatibility = false;
+          // In recent WhatsApp Web builds getChatById() and its model serialization
+          // can fail with a minified "r" error even though authentication succeeded.
+          try {
+            // Safe-mode all-history requests are capped to avoid unlimited memory/CPU.
+            if (limit === Infinity) throw new Error('Usar modo compatibilidade para histórico profundo.');
+            const chat = await this.client.getChatById(id);
+            const items = await chat.fetchMessages({ limit });
+            valid = items.filter(m => Number.isFinite(Number(m.timestamp)) && Number(m.timestamp) > 0);
+          } catch (standardError) {
+            try {
+              const fallback = await readCompatibleMessages(this.client, id, limit === Infinity ? 'all' : limit);
+              valid = fallback.messages;
+              compatibility = true;
+              partialReason = fallback.partialReason || '';
+              if (fallback.incomplete) this.emit('wa:notice', { message: `${name}: histórico parcial. ${partialReason}` });
+            } catch (compatError) {
+              throw new Error(`API padrão: ${String(standardError.message || standardError).slice(0, 90)}; compatibilidade: ${String(compatError.message || compatError).slice(0, 120)}`);
+            }
+          }
           for (let offset = 0; offset < valid.length; offset += 250) {
             if (this.cancelRequested) break;
             const messages = valid.slice(offset, offset + 250).map(m => this.normalize(m, id, name));
@@ -153,7 +194,8 @@ class WhatsAppBridge {
             chatId: id, name, received: valid.length,
             first: timestamps.length ? new Date(timestamps[0] * 1000).toISOString() : null,
             last: timestamps.length ? new Date(timestamps.at(-1) * 1000).toISOString() : null,
-            mayHaveMore: Number.isFinite(limit) && valid.length >= limit,
+            mayHaveMore: Boolean(partialReason) || (Number.isFinite(limit) && valid.length >= limit),
+            compatibility, partialReason,
             cancelled: this.cancelRequested
           };
           coverage.push(entry);

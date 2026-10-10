@@ -69,7 +69,7 @@ export function bindLive({ onMessages, notify, onOffline }) {
       const summary = document.createElement('span');
       const start = item.first ? new Date(item.first).toLocaleDateString('pt-BR') : '—';
       const end = item.last ? new Date(item.last).toLocaleDateString('pt-BR') : '—';
-      summary.textContent = `${nf.format(item.received)} mensagens · ${start} a ${end}${item.mayHaveMore ? ' · pode haver mais histórico' : ''}`;
+      summary.textContent = `${nf.format(item.received)} mensagens · ${start} a ${end}${item.compatibility ? ' · modo compatibilidade' : ''}${item.mayHaveMore ? ' · pode haver mais histórico' : ''}${item.partialReason ? ' · ' + item.partialReason : ''}`;
       row.append(name, summary); host.append(row);
     }
   }
@@ -85,14 +85,39 @@ export function bindLive({ onMessages, notify, onOffline }) {
     $('wa-loaded').textContent = nf.format(collection.size);
     scheduleRender();
   }
+  let refreshing = false;
   async function refresh() {
+    if (refreshing) return;
+    refreshing = true;
+    $('wa-refresh').disabled = true;
     try {
-      const chats = await api.chats();
+      let chats = [];
+      let lastError = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        $('wa-progress').textContent = `Carregando lista de conversas (${attempt}/3)…`;
+        try {
+          chats = await api.chats();
+          lastError = null;
+          if (chats.length) break;
+        } catch(error) { lastError = error; }
+        if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 1800));
+      }
+      if (lastError) throw lastError;
       all.clear(); for (const chat of chats) all.set(chat.id, chat);
       for (const id of [...selected]) if (!all.has(id)) selected.delete(id);
       drawChats();
-      notify(`${nf.format(chats.length)} conversas encontradas no WhatsApp Web.`);
-    } catch(e) { notify(`Não foi possível carregar conversas: ${e.message}`, true); }
+      const label = `${nf.format(chats.length)} conversa(s) disponíveis`;
+      $('wa-progress').textContent = chats.length ? `Lista carregada: ${label}. Selecione uma ou mais conversas.` : 'O WhatsApp Web ainda não disponibilizou conversas. Clique em Atualizar chats em alguns segundos.';
+      state(chats.length ? `Conectado · ${nf.format(chats.length)} chats` : 'Conectado · aguardando chats', phase);
+      notify(chats.length ? label : 'Sem chats carregados. Aguarde sincronizar e tente Atualizar chats.', !chats.length);
+    } catch(e) {
+      $('wa-progress').textContent = `Falha ao carregar conversas: ${e.message}`;
+      state('Conectado · falha na lista', phase);
+      notify(`Não foi possível carregar conversas: ${e.message}`, true);
+    } finally {
+      refreshing = false;
+      if (phase === 'ready') $('wa-refresh').disabled = false;
+    }
   }
   async function connect() {
     try { await api.connect(); } catch(e) { notify(`Falha ao iniciar: ${e.message}`, true); state('Erro ao iniciar', 'error'); }
@@ -149,6 +174,7 @@ export function bindLive({ onMessages, notify, onOffline }) {
   });
   api.on('wa:qr', ({dataUrl}) => { $('wa-qr-wrap').hidden = !dataUrl; if (dataUrl) $('wa-qr').src = dataUrl; });
   api.on('wa:error', ({message}) => notify(message, true));
+  api.on('wa:notice', ({message}) => { $('wa-progress').textContent = message; notify(message); });
   api.on('wa:batch', ({messages}) => ingest(messages));
   api.on('wa:message', msg => ingest([msg]));
   api.on('wa:coverage', entry => { coverage.set(entry.chatId, entry); drawCoverage(); });

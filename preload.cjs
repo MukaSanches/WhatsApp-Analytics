@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('desktop', Object.freeze({
     repair: () => ipcRenderer.invoke('wa-repair'),
     stop: (logout = false) => ipcRenderer.invoke('wa-stop', logout),
     on: (channel, callback) => {
-      if (!['wa:state', 'wa:qr', 'wa:error', 'wa:batch', 'wa:progress', 'wa:message', 'wa:coverage'].includes(channel) || typeof callback !== 'function') throw new Error('Canal inválido');
+      if (!['wa:state', 'wa:qr', 'wa:error', 'wa:batch', 'wa:progress', 'wa:message', 'wa:coverage', 'wa:notice'].includes(channel) || typeof callback !== 'function') throw new Error('Canal inválido');
       const listener = (_event, value) => callback(value);
       ipcRenderer.on(channel, listener);
       return () => ipcRenderer.removeListener(channel, listener);
